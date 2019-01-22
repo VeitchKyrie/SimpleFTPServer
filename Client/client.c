@@ -73,8 +73,8 @@ void server_send(SOCKET sock, char *buffer)
         FD_SET(STDIN_FILENO, &fs); // If sending smthg to the sock
         FD_SET(sock, &fs); // If receiving smthg  form the sock
 
-        if(select(sock + 1, &fs, NULL, NULL, NULL) < 0)
-        { // If error(s)
+        if(select(sock + 1, &fs, NULL, NULL, NULL) < 0) // If error(s)
+        {
             printf("Select error\n");
         }
         else if(FD_ISSET(STDIN_FILENO, &fs)) // If something happened in the set (received or sent)
@@ -87,11 +87,15 @@ void server_send(SOCKET sock, char *buffer)
                 *stop = 0;
             }
 
-            if(strncmp(command_buffer, "help", sizeof(command_buffer)) == 0)
+            if(strncmp(command_buffer, "help", sizeof(command_buffer)) == 0) // If user enter "help"
             {
                 command_help();
             }
-            else
+            else if(strncmp(command_buffer, "put", sizeof(command_buffer)) == 0) // If user enter "put"
+            {
+                command_put();
+            }
+            else // If he enter another command
             {
                 server_send(sock, command_buffer); // Send entered text to server
             }
@@ -142,6 +146,12 @@ void command_help(void)
            "- put \"file\" : upload the file \"file\" from the client computer to the server _n \n"
            "- status : list all connected users \n"
            "- quit : close server connection \n");
+}
+
+
+void command_put(void)
+{
+    printf("The \"put\" command is not available yet.\n");
 }
 
 
