@@ -3,4 +3,4 @@ project(Server C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Server main.c server.c server.h command.h command.c)
+add_executable(Server main.c server.c server.h command.h command.c filesystem.c filesystem.h)

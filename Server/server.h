@@ -28,6 +28,8 @@ typedef struct in_addr IN_ADDR;
 #include <string.h>
 
 #include "client.h"
+#include "command.h"
+#include "filesystem.h"
 
 SOCKET init(void);
 void finish(void);
