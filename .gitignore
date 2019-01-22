@@ -51,10 +51,8 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-Client/cmake-build-debug/
-
-Client/\.idea/
-
-\.idea/
+.idea/
+.directory/
+cmake-build-debug/
 
 \.directory
