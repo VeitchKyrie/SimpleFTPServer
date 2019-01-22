@@ -1,6 +1,7 @@
 #include "client.h"
 
-SOCKET init(char *address){
+SOCKET init(char *address)
+{
 
 #ifdef WIN32 // If windows
     WSADATA wsa;
@@ -46,7 +47,8 @@ void start(SOCKET sock, char *name)
     // Send name
     server_send(sock, name);
     char *stop = NULL;
-    int server_recv(SOCKET sock, char *command_buffer){
+    int server_recv(SOCKET sock, char *command_buffer)
+    {
     int n = 0;
 
     if((n = recv(sock, command_buffer, 1024 - 1, 0)) < 0) // If error(s)
@@ -59,14 +61,14 @@ void start(SOCKET sock, char *name)
     return n;
 }
 
-void server_send(SOCKET sock, char *buffer){
+void server_send(SOCKET sock, char *buffer)
+{
     send(sock, buffer, strlen(buffer), 0);
 }
 
     // Infinite loop
     while(1)
     {
-
         FD_ZERO(&fs); // Clear set
         FD_SET(STDIN_FILENO, &fs); // If sending smthg to the sock
         FD_SET(sock, &fs); // If receiving smthg  form the sock
@@ -75,9 +77,7 @@ void server_send(SOCKET sock, char *buffer){
         { // If error(s)
             printf("Select error\n");
         }
-
-
-        if(FD_ISSET(STDIN_FILENO, &fs)) // If something happened in the set (received or sent)
+        else if(FD_ISSET(STDIN_FILENO, &fs)) // If something happened in the set (received or sent)
         {
             fgets(command_buffer, 1024 - 1, stdin) ;
             stop = strstr(command_buffer, "\n"); // If return, send the written command
@@ -87,11 +87,17 @@ void server_send(SOCKET sock, char *buffer){
                 *stop = 0;
             }
 
-            server_send(sock, command_buffer); // Send entered text to server
+            if(strncmp(command_buffer, "help", sizeof(command_buffer)) == 0)
+            {
+                command_help();
+            }
+            else
+            {
+                server_send(sock, command_buffer); // Send entered text to server
+            }
         }
         else if(FD_ISSET(sock, &fs))
         {
-
             if(server_recv(sock, command_buffer) == 0)
             {
                 printf("Server not connected.\n");
@@ -123,6 +129,22 @@ int server_recv(SOCKET sock, char *buffer){
 void server_send(SOCKET sock, char *buffer){
     send(sock, buffer, strlen(buffer), 0);
 }
+
+
+void command_help(void)
+{
+    printf("Available Commands : \n"
+           "- cd \"directory\" : change the active directory to \"directory\" \n"
+           "- get \"file\" : download the file \"file\" from the server to the client computer\n"
+           "- ls : display all files and directory in the active directory \n"
+           "- makdir \"directory\" : create a directory \"directory\" in the active directory \n"
+           "- delete \"file\" : delete the file or directory \"file\" \n"
+           "- put \"file\" : upload the file \"file\" from the client computer to the server _n \n"
+           "- status : list all connected users \n"
+           "- quit : close server connection \n");
+}
+
+
 void stop(SOCKET sock){
     closesocket(sock);
 }
