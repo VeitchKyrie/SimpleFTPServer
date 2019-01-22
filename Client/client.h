@@ -33,5 +33,6 @@ int server_recv(SOCKET sock, char *buffer);
 void server_send(SOCKET sock, char *buffer);
 
 void command_help(void);
+void command_put(void);
 
 #endif
