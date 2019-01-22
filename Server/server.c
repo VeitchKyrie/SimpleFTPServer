@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "server.h"
-#include "command.h"
 
 /**
  * Init libraries & variables on launch
@@ -14,12 +13,14 @@
 SOCKET init(void){
 
     #ifdef WIN32
+
         WSADATA wsa;
         int err = WSAStartup(MAKEWORD(2, 2), &wsa);
         if(err < 0){
             printf("Load Dll fail\n");
             exit(EXIT_FAILURE);
         }
+
     #endif
 
     SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -54,7 +55,7 @@ SOCKET start(SOCKET sock) {
         exit(-1);
     }
 
-    char buffer[1024],tmpBuffer[1024];
+    char buffer[1024], tmpBuffer[1024];
     /* the index for the array */
     int nbClients = 0;//nb of client
     int set = 0;//select result
@@ -64,6 +65,9 @@ SOCKET start(SOCKET sock) {
     Client clients[100];
 
     fd_set fs;
+
+    char current_folder[1024];
+    getStartFolder(current_folder, sizeof(current_folder));
 
     while(1) {
         i = 0;
@@ -81,14 +85,8 @@ SOCKET start(SOCKET sock) {
         {
             printf("Error doing select() on socket.\n");
         }
-        else if (set  == 0)
-        {
-            printf("Nothing to do.");
-            //Time out not set in this example
-        }
         else if(FD_ISSET(sock, &fs)) // Client Connection
         {
-            printf("New login attempt");
 
             SOCKADDR_IN cli_addr;
             int sinsize = sizeof(cli_addr);
@@ -107,6 +105,12 @@ SOCKET start(SOCKET sock) {
 
             clients[nbClients] = c;
 
+            strncpy(tmpBuffer, "Bienvenue sur le serveur FTP\nServer ", sizeof(tmpBuffer));
+            strncat(tmpBuffer, current_folder, sizeof(current_folder)-strlen(current_folder)-1);
+            strncat(tmpBuffer, " > ", sizeof(current_folder)-strlen(current_folder)-1);
+
+            client_send(c.sock, tmpBuffer);
+
             nbClients++;
             printf("%d clients connected\n",nbClients);
         }
@@ -124,10 +128,9 @@ SOCKET start(SOCKET sock) {
 
                         printf("Disconnected: %s \n",clients[i].user);
                         client_close(clients, i, &nbClients);
+
                         if(nbClients == 0) {
-
                             return 1;
-
                         }
 
                     }
@@ -135,46 +138,53 @@ SOCKET start(SOCKET sock) {
                     {
 
                         char command[1024] = {0};
-                        char arguments[1024];
+                        int commandSize = 0;
+                        int space = 0;
+                        char arguments[1024] = {0};
 
                         for (int x = 0; x < strlen(buffer); x++) {
 
-                            /*
-                             * The first space in the data sent by client
-                             * delimits the command & the arguments
-                             */
-                            if (buffer[x] == ' ') {
 
-                                strncpy(command, buffer, x);
-                                break;
+                            if (buffer[x] == ' ' && space < 1) {
 
-                            }
+                                space++;
 
-                            /*
-                             * If there is no space and we are at the end of data sent by client,
-                             * then the entire data is the command & there are no arguments.
-                             */
-                            if (x == strlen(buffer) - 1) {
+                            } else {
 
-                                strncpy(command, buffer, sizeof(buffer));
+                                if (space < 1) {
+
+                                    strncat(command, &buffer[x], 1);
+
+                                } else {
+
+                                    strncat(arguments, &buffer[x], 1);
+
+                                }
 
                             }
 
                         }
 
-                        /*for (int y = strlen(command); y < strlen(buffer); y++) {
-
-                            strcat(arguments, buffer[y]);
-
-                        }*/
+                        /*
                         printf("Command asked by %s : %s\n", clients[i].user, command);
-                        //printf("Arguments asked by %s : %s\n", clients[i].user, arguments);
+                        printf("Arguments : %s\n", arguments);
+                        */
 
                         if (strncmp(command, "status", sizeof(command)) == 0) {
 
                             printf("Client > Status request\n");
                             char response[1024] = {0};
                             command_status(clients, i, response, sizeof(response));
+                            client_send(clients[i].sock, response);
+
+                        } else if (strncmp(command, "delete", sizeof(command)) == 0) {
+
+                            strncpy(tmpBuffer, current_folder, sizeof(tmpBuffer));
+                            strncat(tmpBuffer, arguments, sizeof(tmpBuffer) - strlen(tmpBuffer) - 1);
+
+                            printf("Client > delete request : %s\n", tmpBuffer);
+                            char response[1024] = {0};
+                            command_delete(tmpBuffer, response, sizeof(response));
                             client_send(clients[i].sock, response);
 
                         } else if (strncmp(command, "help", sizeof(command)) == 0) {

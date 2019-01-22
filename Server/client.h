@@ -5,12 +5,12 @@
 #ifndef SERVER_CLIENT_H
 #define SERVER_CLIENT_H
 
-typedef struct
-{
+    typedef struct
+    {
 
-    SOCKET sock;
-    char user[1024];
+        SOCKET sock;
+        char user[1024];
 
-}Client;
+    }Client;
 
 #endif //SERVER_CLIENT_H
