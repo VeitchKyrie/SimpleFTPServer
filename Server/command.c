@@ -12,7 +12,7 @@
  * @param buffer_size
  * @return
  */
-void *command_status(Client *clients, int i, char *buffer, int buffer_size)
+void command_status(Client *clients, int i, char *buffer, int buffer_size)
 {
 
     strncpy(buffer, "Server > Connected as ", buffer_size);
@@ -26,11 +26,12 @@ void *command_status(Client *clients, int i, char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void *command_help(char *buffer, int buffer_size)
+void command_help(char *buffer, int buffer_size)
 {
 
     /*
-     * TODO: Implement help command
+     * This is just a placeholder,
+     * the help command is handled by the client.
      */
     strncpy(buffer, "Server > Help not implemented yet.", buffer_size);
     
@@ -42,7 +43,7 @@ void *command_help(char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void *command_undef(char *buffer, int buffer_size)
+void command_undef(char *buffer, int buffer_size)
 {
 
     strncpy(buffer, "Server > Command undefined. Please refer to the help.", buffer_size);
@@ -58,7 +59,20 @@ void *command_undef(char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void *command_ls(char *folder, char *buffer, int buffer_size)
+void command_ls(char *folder, char *buffer, int buffer_size)
+{
+
+
+
+}
+
+/**
+ * Handling the put command
+ * @param filepath
+ * @param response_buffer
+ * @param response_size
+ */
+void command_put(char *filepath, char *response_buffer, int response_size)
 {
 
 
@@ -74,7 +88,7 @@ void *command_ls(char *folder, char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void *command_delete(char *filepath, char *buffer, int buffer_size)
+void command_delete(char *filepath, char *buffer, int buffer_size)
 {
 
     int delete_status = deleteFile(filepath);

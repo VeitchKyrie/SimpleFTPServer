@@ -29,10 +29,11 @@
     #include "client.h"
     #include "filesystem.h"
 
-    void *command_status(Client *client, int i, char *buffer, int buffer_size);
-    void *command_help(char *buffer, int buffer_size);
-    void *command_undef(char *buffer, int buffer_size);
-    void *command_ls(char *folder, char *buffer, int buffer_size);
-    void *command_delete(char *filepath, char *buffer, int buffer_size);
+    void command_status(Client *client, int i, char *buffer, int buffer_size);
+    void command_help(char *buffer, int buffer_size);
+    void command_undef(char *buffer, int buffer_size);
+    void command_ls(char *folder, char *buffer, int buffer_size);
+    void command_put(char *filepath, char *response_buffer, int response_size);
+    void command_delete(char *filepath, char *buffer, int buffer_size);
 
 #endif //SERVER_COMMAND_H

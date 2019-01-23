@@ -24,16 +24,23 @@ int doesFileExist(char *filepath)
 
 }
 
+/**
+ * Get server's start folder
+ * @param folder
+ * @param folder_size
+ */
 void getStartFolder(char *folder, int folder_size)
 {
 
     #ifdef _WIN32
 
+        // Default server folder for windows : C:/
         strncpy(folder, "C:/", folder_size);
 
     #else
 
-        strncpy(folder, "/home/", folder_size);
+    // Default server folder for unix based systems : /home/
+    strncpy(folder, "/home/", folder_size);
 
     #endif
 
