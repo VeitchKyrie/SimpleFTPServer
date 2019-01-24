@@ -29,11 +29,13 @@
     #include "client.h"
     #include "filesystem.h"
 
-    void command_status(Client *client, int i, char *buffer, int buffer_size);
-    void command_help(char *buffer, int buffer_size);
+    void command_status(Client *clients, int nbClients, char *response_buffer);
+    void command_help(char *buffer);
     void command_undef(char *buffer, int buffer_size);
     void command_ls(char *folder, char *buffer, int buffer_size);
-    void command_put(char *filepath, char *response_buffer, int response_size);
+    void command_put(char *filepath, char *data_buffer, int data_size, char *response_buffer, int response_size);
+    void command_mkdir(char *filepath, char *response_buffer);
     void command_delete(char *filepath, char *buffer, int buffer_size);
+    void command_cd(char *newpath, char *current_path, int currpath_size, char *response_buffer);
 
 #endif //SERVER_COMMAND_H

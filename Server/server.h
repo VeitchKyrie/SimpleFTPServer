@@ -42,6 +42,6 @@ void client_close(Client *clients, int i, int *nbClients);
 
 int client_recv(SOCKET sock, char *msg);
 int client_send(SOCKET sock, const char *msg);
-
+void send_path(SOCKET sock, char *buffer, int buffersize, char *path, int pathsize);
 
 #endif //SERVER_SERVER_H

@@ -7,11 +7,10 @@
 int main(int argc, char **argv)
 {
 
-    printf("Simple FTP Server!\n");
+    printf("==== Simple FTP Server! ====\n");
 
     SOCKET sock = init();
-    sock = start(sock);
-
+    start(sock);
     stop(sock);
     finish();
 

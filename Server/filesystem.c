@@ -21,7 +21,22 @@ int doesFileExist(char *filepath)
         return 0;
     }
 
+}
 
+/**
+ * Test if folder exists
+ * @param filepath
+ * @return
+ */
+int doesFolderExist(char *filepath)
+{
+    struct stat st = {0};
+
+    if (stat(filepath, &st) == -1) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 /**
@@ -39,8 +54,8 @@ void getStartFolder(char *folder, int folder_size)
 
     #else
 
-    // Default server folder for unix based systems : /home/
-    strncpy(folder, "/home/", folder_size);
+    // Default server folder for unix based systems : /
+    strncpy(folder, "/", folder_size);
 
     #endif
 
@@ -81,6 +96,54 @@ int deleteFile(char *filepath)
     } else {
 
         //File does not exist
+        return 0;
+
+    }
+
+}
+
+/**
+ * Write file
+ * @param filepath
+ * @param data_buffer
+ * @param data_size
+ * @return
+ */
+int writeFile(char *filepath, char* data_buffer, int data_size)
+{
+
+    FILE* file = NULL;
+    file = fopen(filepath, "w");
+
+    if (file != NULL) {
+
+        fputs(data_buffer, file);
+        fclose(file);
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+/**
+ * Create a directory
+ * @param filepath
+ * @param data_buffer
+ * @param data_size
+ * @return
+ */
+int writeDir(char *filepath)
+{
+
+    if (doesFolderExist(filepath) < 1) {
+
+        mkdir(filepath, 0700);
+        return 1;
+
+    } else {
+
         return 0;
 
     }

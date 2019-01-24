@@ -12,11 +12,23 @@
  * @param buffer_size
  * @return
  */
-void command_status(Client *clients, int i, char *buffer, int buffer_size)
+void command_status(Client *clients, int nbClients, char *response_buffer)
 {
 
-    strncpy(buffer, "Server > Connected as ", buffer_size);
-    strncat(buffer, clients[i].user, buffer_size - strlen(buffer) - 1);
+    strncat(response_buffer, "Current clients:\n", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    for (int i = 0; i < nbClients; i++) {
+
+        char userid[12];
+        sprintf(userid, "%d", i);
+
+        strncat(response_buffer, "#", sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, userid, sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, ": ", sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, clients->user, sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, "\n", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    }
 
 }
 
@@ -26,15 +38,26 @@ void command_status(Client *clients, int i, char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void command_help(char *buffer, int buffer_size)
+void command_help(char *response_buffer)
 {
 
-    /*
-     * This is just a placeholder,
-     * the help command is handled by the client.
-     */
-    strncpy(buffer, "Server > Help not implemented yet.", buffer_size);
-    
+    char tmp[1024];
+
+    strncpy(tmp, "Available Commands:\n", sizeof(tmp));
+    strncat(tmp, "- cd [directory]: changes the active directory to \"directory\". Path is absolute.\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- get [file]: downloads the file \"file\" from the server to the client computer.\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- ls: displays all files and directories in the current directory.\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- mkdir [directory]: creates a directory \"directory\".\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- delete [file]: deletes the file or directory \"file\".\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- put [file]: uploads the file \"file\" from the client computer to the server (WIP)\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- status: lists all connected users\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- quit : closes server connection\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "- shutdown: gracefully shuts down the server.", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "(WIP: work in progress)\n", sizeof(tmp)-strlen(tmp)-1);
+    strncat(tmp, "(All paths are relative to current path unless said otherwise)\n", sizeof(tmp)-strlen(tmp)-1);
+
+    strncat(response_buffer, tmp, sizeof(response_buffer)-strlen(response_buffer)-1);
+
 }
 
 /**
@@ -43,10 +66,10 @@ void command_help(char *buffer, int buffer_size)
  * @param buffer_size
  * @return
  */
-void command_undef(char *buffer, int buffer_size)
+void command_undef(char *response_buffer, int buffer_size)
 {
 
-    strncpy(buffer, "Server > Command undefined. Please refer to the help.", buffer_size);
+    strncat(response_buffer, "Command undefined. Please refer to the help.", sizeof(response_buffer)-strlen(response_buffer)-1);
 
 }
 
@@ -72,10 +95,38 @@ void command_ls(char *folder, char *buffer, int buffer_size)
  * @param response_buffer
  * @param response_size
  */
-void command_put(char *filepath, char *response_buffer, int response_size)
+void command_put(char *filepath, char *data_buffer, int data_size, char *response_buffer, int response_size)
 {
 
+    if (writeFile(filepath, data_buffer, data_size) >= 0) {
 
+        strncat(response_buffer, "Create successful.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    } else {
+
+        strncat(response_buffer, "Create file error.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    }
+
+}
+
+/**
+ * Create folder
+ * @param filepath
+ * @param response_buffer
+ */
+void command_mkdir(char *filepath, char *response_buffer)
+{
+
+    if (writeDir(filepath) >= 0) {
+
+        strncat(response_buffer, "Create successful.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    } else {
+
+        strncat(response_buffer, "Create folder error.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    }
 
 }
 
@@ -95,17 +146,47 @@ void command_delete(char *filepath, char *buffer, int buffer_size)
 
     if (delete_status > 0) {
 
-        strncpy(buffer, "Server > Delete successful.", buffer_size);
+        strncat(buffer, "Delete successful.", sizeof(buffer)-strlen(buffer)-1);
 
     } else if (delete_status < 0) {
 
-        strncpy(buffer, "Server > An error occurred while deleting desired file.", buffer_size);
+        strncat(buffer, "An error occurred while deleting desired file.", sizeof(buffer)-strlen(buffer)-1);
 
     } else {
 
-        strncpy(buffer, "Server > Desired file does not exist...", buffer_size);
+        strncat(buffer, "Desired file does not exist...", sizeof(buffer)-strlen(buffer)-1);
 
     }
 
 }
 
+/**
+ * Moves the currentpath to newpath
+ * newpath is not relative to currentpath!
+ * @param newpath
+ * @param current_path
+ * @param currpath_size
+ * @param response_buffer
+ */
+void command_cd(char *newpath, char *current_path, int currpath_size, char *response_buffer)
+{
+
+    if (doesFileExist(newpath) > 0) {
+
+        strncpy(current_path, newpath, currpath_size);
+        if (strncmp(&newpath[strlen(newpath)-1], "/", 1) != 0) //The address has to end with "/"
+        {
+            strncat(current_path, "/", 1);
+        }
+
+        strncat(response_buffer, "New directory: ", sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, current_path, sizeof(response_buffer)-strlen(response_buffer)-1);
+
+
+    } else {
+
+        strncat(response_buffer, "Can't cd: directory does not exist.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    }
+
+}

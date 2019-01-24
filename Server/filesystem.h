@@ -7,10 +7,15 @@
 
 #include <libnet.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 int doesFileExist(char *filepath);
 void getStartFolder(char *folder, int folder_size);
 void listFolder(char *list, char *folder, int folder_size);
 int deleteFile(char *filepath);
+int writeFile(char *filepath, char* data_buffer, int data_size);
+int writeDir(char *filepath);
 
 #endif //SERVER_FILESYSTEM_H
