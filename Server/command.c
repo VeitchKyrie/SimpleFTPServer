@@ -25,7 +25,7 @@ void command_status(Client *clients, int nbClients, char *response_buffer)
         strncat(response_buffer, "#", sizeof(response_buffer)-strlen(response_buffer)-1);
         strncat(response_buffer, userid, sizeof(response_buffer)-strlen(response_buffer)-1);
         strncat(response_buffer, ": ", sizeof(response_buffer)-strlen(response_buffer)-1);
-        strncat(response_buffer, clients->user, sizeof(response_buffer)-strlen(response_buffer)-1);
+        strncat(response_buffer, clients[i].user, sizeof(response_buffer)-strlen(response_buffer)-1);
         strncat(response_buffer, "\n", sizeof(response_buffer)-strlen(response_buffer)-1);
 
     }
