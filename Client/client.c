@@ -91,6 +91,10 @@ void server_send(SOCKET sock, char *buffer)
             {
                 command_put(command_buffer);
             }
+            else if((command_buffer, "get", 3) == 0) // If user enter "get"
+            {
+                command_get(command_buffer);
+            }
             else // If he enter another command
             {
                 server_send(sock, command_buffer); // Send entered text to server
@@ -121,7 +125,6 @@ int server_recv(SOCKET sock, char *command_buffer){
     }
 
     command_buffer[n] = 0;
-
     return n;
 }
 
@@ -158,8 +161,47 @@ void command_put(char *command_buffer)
     }
 
     printf("Command : %s \n", command);
-    printf("File name: %s \n", file_path);
+    printf("File path : %s \n", file_path);
+    printf("%s sent to server. \n", file_path);
 }
+
+void command_get(char *command_buffer)
+{
+    char command[1024] = {0};
+    int commandSize = 0;
+    int space = 0;
+    char file_path[1024] = {0};
+    char *data_buffer = "default data";
+
+
+    for (int x = 0; x < strlen(command_buffer); x++)
+    {
+        if (command_buffer[x] == ' ' && space < 1)
+        {
+            space++;
+        }
+        else
+        {
+            if (space < 1)
+            {
+                strncat(command, &command_buffer[x], 1);
+            }
+            else
+            {
+                strncat(file_path, &command_buffer[x], 1);
+            }
+        }
+    }
+
+    if(writeFile(file_path, data_buffer) >= 0) 
+    {
+        printf("%s received from server.\n", file_path);
+    } else {
+        printf("Error");
+    }
+}
+
+
 
 void stop(SOCKET sock){
     closesocket(sock);
