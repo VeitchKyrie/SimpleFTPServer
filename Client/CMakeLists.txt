@@ -3,4 +3,4 @@ project(Client C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Client main.c client.h client.c)
+add_executable(Client main.c client.h client.c filesystem.c filesystem.h)
