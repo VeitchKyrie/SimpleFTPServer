@@ -10,13 +10,13 @@ int main(int argc, char **argv)
     char host[255];
     printf("Address : "); // 127.0.0.1 = localhost
     scanf("%s", &host);
-    printf("Your name : ");
-    char name[255];
-    scanf("%s", &name);
+    printf("Username : ");
+    char username[255];
+    scanf("%s", &username);
 
     SOCKET sock = init(host);
 
-    start(sock, name);
+    start(sock, username);
     stop(sock);
 
     finish();

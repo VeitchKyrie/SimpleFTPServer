@@ -73,8 +73,8 @@ void server_send(SOCKET sock, char *buffer)
         FD_SET(STDIN_FILENO, &fs); // If sending smthg to the sock
         FD_SET(sock, &fs); // If receiving smthg  form the sock
 
-        if(select(sock + 1, &fs, NULL, NULL, NULL) < 0)
-        { // If error(s)
+        if(select(sock + 1, &fs, NULL, NULL, NULL) < 0) // If error(s)
+        {
             printf("Select error\n");
         }
         else if(FD_ISSET(STDIN_FILENO, &fs)) // If something happened in the set (received or sent)
@@ -87,11 +87,11 @@ void server_send(SOCKET sock, char *buffer)
                 *stop = 0;
             }
 
-            if(strncmp(command_buffer, "help", sizeof(command_buffer)) == 0)
+            if(strncmp(command_buffer, "put", 3) == 0) // If user enter "put"
             {
-                command_help();
+                command_put(command_buffer);
             }
-            else
+            else // If he enter another command
             {
                 server_send(sock, command_buffer); // Send entered text to server
             }
@@ -112,38 +112,54 @@ void server_send(SOCKET sock, char *buffer)
 }
 
 
-int server_recv(SOCKET sock, char *buffer){
+int server_recv(SOCKET sock, char *command_buffer){
     int n = 0;
 
-    if((n = recv(sock, buffer, 1024 - 1, 0)) < 0)
+    if((n = recv(sock, command_buffer, 1024 - 1, 0)) < 0)
     {
         n = 0;
     }
 
-    buffer[n] = 0;
+    command_buffer[n] = 0;
 
     return n;
 }
 
 
-void server_send(SOCKET sock, char *buffer){
-    send(sock, buffer, strlen(buffer), 0);
+void server_send(SOCKET sock, char *command_buffer){
+    send(sock, command_buffer, strlen(command_buffer), 0);
 }
 
 
-void command_help(void)
+void command_put(char *command_buffer)
 {
-    printf("Available Commands : \n"
-           "- cd \"directory\" : change the active directory to \"directory\" \n"
-           "- get \"file\" : download the file \"file\" from the server to the client computer\n"
-           "- ls : display all files and directory in the active directory \n"
-           "- makdir \"directory\" : create a directory \"directory\" in the active directory \n"
-           "- delete \"file\" : delete the file or directory \"file\" \n"
-           "- put \"file\" : upload the file \"file\" from the client computer to the server _n \n"
-           "- status : list all connected users \n"
-           "- quit : close server connection \n");
-}
+    char command[1024] = {0};
+    int commandSize = 0;
+    int space = 0;
+    char file_path[1024] = {0};
 
+    for (int x = 0; x < strlen(command_buffer); x++)
+    {
+        if (command_buffer[x] == ' ' && space < 1)
+        {
+            space++;
+        }
+        else
+        {
+            if (space < 1)
+            {
+                strncat(command, &command_buffer[x], 1);
+            }
+            else
+            {
+                strncat(file_path, &command_buffer[x], 1);
+            }
+        }
+    }
+
+    printf("Command : %s \n", command);
+    printf("File name: %s \n", file_path);
+}
 
 void stop(SOCKET sock){
     closesocket(sock);
