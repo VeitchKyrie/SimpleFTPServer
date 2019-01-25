@@ -5,13 +5,14 @@
 
 int main(int argc, char **argv)
 {
-    printf("Simple FTP Server ! \n");
-    printf("Writting \"help\" at any moment will show you all the possible commands \n");
     char host[255];
-    printf("Address : "); // 127.0.0.1 = localhost
+    char username[255];
+
+    printf("Simple FTP Client! \n");
+    printf("Writing \"help\" at any moment will show you all the possible commands \n");
+    printf("Address : ");
     scanf("%s", &host);
     printf("Username : ");
-    char username[255];
     scanf("%s", &username);
 
     SOCKET sock = init(host);

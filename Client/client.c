@@ -47,24 +47,6 @@ void start(SOCKET sock, char *name)
     // Send name
     server_send(sock, name);
     char *stop = NULL;
-    int server_recv(SOCKET sock, char *command_buffer)
-    {
-    int n = 0;
-
-    if((n = recv(sock, command_buffer, 1024 - 1, 0)) < 0) // If error(s)
-    {
-        n = 0;
-    }
-
-    command_buffer[n] = 0;
-
-    return n;
-}
-
-void server_send(SOCKET sock, char *buffer)
-{
-    send(sock, buffer, strlen(buffer), 0);
-}
 
     // Infinite loop
     while(1)
