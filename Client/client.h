@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "filesystem.h"
 
 #ifdef WIN32 // if windows
     #include <winsock2.h>
@@ -33,5 +34,6 @@ int server_recv(SOCKET sock, char *buffer);
 void server_send(SOCKET sock, char *buffer);
 
 void command_put(char *command_buffer);
+void command_get(char *command_buffer);
 
 #endif
