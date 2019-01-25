@@ -1,16 +1,14 @@
 //
 // Created by simon on 21/01/19.
 //
-#include <stdio.h>
-#include <string.h>
-
 #include "server.h"
 
 /**
  * Init libraries & variables on launch
- * @return
+ * @return SOCKET
  */
-SOCKET init(void){
+SOCKET init(void)
+{
 
     #ifdef WIN32
 
@@ -38,7 +36,8 @@ SOCKET init(void){
 /**
  * Cleanup on quit
  */
-void finish(void){
+void finish(void)
+{
     #ifdef WIN32
         WSACleanup();
     #endif
@@ -48,7 +47,8 @@ SOCKET start(SOCKET sock) {
 
     printf("Server > Server open \n");
 
-    if(listen(sock, 100) < 0) { //Max clients 100
+    if(listen(sock, 100) < 0) //Max clients 100
+    {
         printf("Could not open port! Quitting.\n");
         exit(-1);
     }
@@ -80,8 +80,7 @@ SOCKET start(SOCKET sock) {
 
         set = select(max + 1, &fs, NULL, NULL, NULL);
 
-        if (set < 0)
-        {
+        if (set < 0) {
             printf("Error doing select() on socket.\n");
         }
         else if(FD_ISSET(sock, &fs)) // Client Connection
@@ -93,7 +92,7 @@ SOCKET start(SOCKET sock) {
 
             Client c;
             c.sock = cli;
-            if(client_recv(cli, c.user) < 0){
+            if(client_receive(cli, c.user) < 0){
                 /* disconnected */
             }
             printf("Server > User %s connected\n", c.user);
@@ -108,7 +107,7 @@ SOCKET start(SOCKET sock) {
             strncat(tmp_buffer, current_folder, sizeof(current_folder)-strlen(current_folder)-1);
             strncat(tmp_buffer, " > ", sizeof(current_folder)-strlen(current_folder)-1);
 
-            client_send(c.sock, tmp_buffer);
+            client_respond(c.sock, tmp_buffer);
 
             nbClients++;
             printf("Server > %d clients connected\n",nbClients);
@@ -120,9 +119,10 @@ SOCKET start(SOCKET sock) {
              */
             for(i = 0; i < nbClients; i++)
             {
+
                 if(FD_ISSET(clients[i].sock, &fs))
                 {
-                    if(client_recv(clients[i].sock, buffer) < 1) // Client disconnection
+                    if(client_receive(clients[i].sock, buffer) < 1) // Client disconnection
                     {
 
                         printf("Server > User %s disconnected.\n",clients[i].user);
@@ -134,34 +134,9 @@ SOCKET start(SOCKET sock) {
 
                         char command[1024] = {0};
                         char arguments[1024] = {0};
-                        int space = 0;
 
-                        for (int x = 0; x < strlen(buffer); x++) {
-
-
-                            if (buffer[x] == ' ' && space < 1) {
-
-                                space++;
-
-                            } else {
-
-                                if (space < 1) {
-
-                                    strncat(command, &buffer[x], 1);
-
-                                } else {
-
-                                    strncat(arguments, &buffer[x], 1);
-
-                                }
-
-                            }
-
-                        }
-
-                        strncpy(response_buffer, "Server ", sizeof(response_buffer));
-                        strncat(response_buffer, current_folder, sizeof(response_buffer)-strlen(response_buffer)-strlen(current_folder)-1);
-                        strncat(response_buffer, " > ", sizeof(response_buffer)-strlen(response_buffer)-4);
+                        command_decipher(buffer, command, arguments);
+                        response_prefix(response_buffer, current_folder);
 
                         if (strncmp(command, "status", sizeof(command)) == 0) {
 
@@ -174,7 +149,14 @@ SOCKET start(SOCKET sock) {
                             strncat(tmp_buffer, arguments, sizeof(tmp_buffer) - strlen(tmp_buffer) - 1);
 
                             printf("User %s > delete request : %s\n", clients[i].user, tmp_buffer);
-                            command_delete(tmp_buffer, response_buffer, sizeof(response_buffer));
+                            command_delete(tmp_buffer, response_buffer);
+
+                            free(tmp_buffer);
+
+                        } else if (strncmp(command, "ls", sizeof(command)) == 0) {
+
+                            printf("User %s > ls request\n", clients[i].user);
+                            command_ls(current_folder, response_buffer);
 
                         } else if (strncmp(command, "help", sizeof(command)) == 0) {
 
@@ -194,6 +176,8 @@ SOCKET start(SOCKET sock) {
                             printf("User %s > mkdir request: %s\n", clients[i].user, tmp_buffer);
                             command_mkdir(tmp_buffer, response_buffer);
 
+                            free(tmp_buffer);
+
                         } else if (strncmp(command, "put", sizeof(command)) == 0) {
 
                             strncpy(tmp_buffer, current_folder, sizeof(tmp_buffer));
@@ -202,7 +186,9 @@ SOCKET start(SOCKET sock) {
                             char *data_buffer = "default data";
 
                             printf("User %s > Put request: %s\n", clients[i].user, tmp_buffer);
-                            command_put(tmp_buffer, data_buffer, sizeof(data_buffer), response_buffer, sizeof(response_buffer));
+                            command_put(tmp_buffer, data_buffer, response_buffer);
+                            free(tmp_buffer);
+                            free(data_buffer);
 
                         } else if (strncmp(command, "quit", sizeof(command)) == 0) {
 
@@ -219,9 +205,13 @@ SOCKET start(SOCKET sock) {
                         } else {
 
                             printf("User %s > Undefined command \"%s\"\n", clients[i].user, command);
-                            command_undef(response_buffer, sizeof(response_buffer));
+                            command_undef(response_buffer);
                         }
-                        client_send(clients[i].sock, response_buffer);
+
+                        /*
+                         * Send response
+                         */
+                        client_respond(clients[i].sock, response_buffer);
                     }
                     break;
                 }
@@ -229,20 +219,66 @@ SOCKET start(SOCKET sock) {
         }
     }
 
-    close_all(clients, &nbClients);
+    client_close_all(clients, &nbClients);
     return 1;
 
 }
 
-void send_path(SOCKET sock, char *buffer, int buffersize, char *path, int pathsize)
+/**
+ * Return command & arguments from buffer
+ * @param buffer
+ * @param command
+ * @param arguments
+ */
+void command_decipher(char *buffer, char *command, char *arguments)
 {
+
+    int space = 0;
+
+    for (int x = 0; x < strlen(buffer); x++) {
+
+
+        if (buffer[x] == ' ' && space < 1) {
+
+            space++;
+
+        } else {
+
+            if (space < 1) {
+
+                strncat(command, &buffer[x], 1);
+
+            } else {
+
+                strncat(arguments, &buffer[x], 1);
+
+            }
+
+        }
+
+    }
+
+}
+
+/**
+ * Construct server's response prefix (current folder)
+ * @param response_buffer
+ * @param current_folder
+ */
+void response_prefix(char *response_buffer, char *current_folder)
+{
+
+    strncpy(response_buffer, "Server ", sizeof(response_buffer));
+    strncat(response_buffer, current_folder, sizeof(response_buffer)-strlen(response_buffer)-strlen(current_folder)-1);
+    strncat(response_buffer, " > ", sizeof(response_buffer)-strlen(response_buffer)-4);
+
 }
 
 /**
  * Close the socket
  * @param sock
  */
-void stop(SOCKET sock)
+void server_stop(SOCKET sock)
 {
     closesocket(sock);
 }
@@ -252,12 +288,12 @@ void stop(SOCKET sock)
  * @param clients
  * @param nbClients
  */
-void close_all(Client *clients, int *nbClients)
+void client_close_all(Client *clients, int *nbClients)
 {
     int i = 0;
     for(i = 0; i < *nbClients; i++)
     {
-        client_send(clients[i].sock, "Server > Closing client connection");
+        client_respond(clients[i].sock, "Server > Closing client connection");
         client_close(clients,i, nbClients);
     }
 }
@@ -282,13 +318,12 @@ void client_close(Client *clients, int i, int *nbClients)
  * @param msg
  * @return
  */
-int client_recv(SOCKET sock, char *msg)
+int client_receive(SOCKET sock, char *msg)
 {
-    int n = 0;
+    int n = recv(sock, msg, 1024 - 1, 0);
 
-    if((n = recv(sock, msg, 1024 - 1, 0)) < 0)
+    if(n < 0)
     {
-
         n = 0;
     }
 
@@ -303,7 +338,7 @@ int client_recv(SOCKET sock, char *msg)
  * @param msg
  * @return
  */
-int client_send(SOCKET sock, const char *msg)
+int client_respond(SOCKET sock, const char *msg)
 {
     return send(sock, msg, strlen(msg), 0);
 }

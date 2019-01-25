@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
     SOCKET sock = init();
     start(sock);
-    stop(sock);
+    server_stop(sock);
     finish();
 
     return EXIT_SUCCESS;

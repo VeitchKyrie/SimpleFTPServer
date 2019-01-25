@@ -54,17 +54,10 @@ void getStartFolder(char *folder, int folder_size)
 
     #else
 
-    // Default server folder for unix based systems : /
-    strncpy(folder, "/", folder_size);
+        // Default server folder for unix based systems : /
+        strncpy(folder, "/", folder_size);
 
     #endif
-
-}
-
-void listFolder(char *list, char *folder, int folder_size)
-{
-
-
 
 }
 
@@ -106,10 +99,9 @@ int deleteFile(char *filepath)
  * Write file
  * @param filepath
  * @param data_buffer
- * @param data_size
  * @return
  */
-int writeFile(char *filepath, char* data_buffer, int data_size)
+int writeFile(char *filepath, char* data_buffer)
 {
 
     FILE* file = NULL;

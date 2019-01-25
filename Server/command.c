@@ -5,12 +5,11 @@
 #include "command.h"
 
 /**
- * Response for the "status" command
+ * COMMAND STATUS
+ * List client connected
  * @param clients
- * @param i
- * @param buffer
- * @param buffer_size
- * @return
+ * @param nbClients
+ * @param response_buffer
  */
 void command_status(Client *clients, int nbClients, char *response_buffer)
 {
@@ -33,10 +32,9 @@ void command_status(Client *clients, int nbClients, char *response_buffer)
 }
 
 /**
- * Response for the "help" command
- * @param buffer
- * @param buffer_size
- * @return
+ * COMMAND HELP
+ * List possible commands
+ * @param response_buffer
  */
 void command_help(char *response_buffer)
 {
@@ -61,12 +59,10 @@ void command_help(char *response_buffer)
 }
 
 /**
- * Response for an unknown command
- * @param buffer
- * @param buffer_size
- * @return
+ * Response for undefined command
+ * @param response_buffer
  */
-void command_undef(char *response_buffer, int buffer_size)
+void command_undef(char *response_buffer)
 {
 
     strncat(response_buffer, "Command undefined. Please refer to the help.", sizeof(response_buffer)-strlen(response_buffer)-1);
@@ -74,31 +70,51 @@ void command_undef(char *response_buffer, int buffer_size)
 }
 
 /**
- * Response for the ls command
+ * COMMAND LS
  * List the files & folders inside a directory "folder"
+ * TODO: move FS logic to filesystem.c
  * @param folder
- * @param folder_size
- * @param buffer
- * @param buffer_size
- * @return
+ * @param response_buffer
  */
-void command_ls(char *folder, char *buffer, int buffer_size)
+void command_ls(char *folder, char *response_buffer)
 {
 
+    struct dirent **namelist;
+    int n;
 
+    n = scandir(folder, &namelist, NULL, alphasort);
+
+    if (n < 0) {
+
+        strncat(response_buffer, "LS Command error.", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+    } else {
+
+        while (n--) {
+
+            strncat(response_buffer, namelist[n]->d_name, sizeof(response_buffer)-strlen(response_buffer)-1);
+            strncat(response_buffer, " ", sizeof(response_buffer)-strlen(response_buffer)-1);
+
+            free(namelist[n]);
+
+        }
+
+        free(namelist);
+
+    }
 
 }
 
 /**
- * Handling the put command
+ * COMMAND PUT
  * @param filepath
+ * @param data_buffer
  * @param response_buffer
- * @param response_size
  */
-void command_put(char *filepath, char *data_buffer, int data_size, char *response_buffer, int response_size)
+void command_put(char *filepath, char *data_buffer, char *response_buffer)
 {
 
-    if (writeFile(filepath, data_buffer, data_size) >= 0) {
+    if (writeFile(filepath, data_buffer) >= 0) {
 
         strncat(response_buffer, "Create successful.", sizeof(response_buffer)-strlen(response_buffer)-1);
 
@@ -133,28 +149,25 @@ void command_mkdir(char *filepath, char *response_buffer)
 /**
  * Response for the delete command
  * Deletes a file
- * @param folder
- * @param folder_size
- * @param buffer
- * @param buffer_size
- * @return
+ * @param filepath
+ * @param response_buffer
  */
-void command_delete(char *filepath, char *buffer, int buffer_size)
+void command_delete(char *filepath, char *response_buffer)
 {
 
     int delete_status = deleteFile(filepath);
 
     if (delete_status > 0) {
 
-        strncat(buffer, "Delete successful.", sizeof(buffer)-strlen(buffer)-1);
+        strncat(response_buffer, "Delete successful.", sizeof(response_buffer)-strlen(response_buffer)-1);
 
     } else if (delete_status < 0) {
 
-        strncat(buffer, "An error occurred while deleting desired file.", sizeof(buffer)-strlen(buffer)-1);
+        strncat(response_buffer, "An error occurred while deleting desired file.", sizeof(response_buffer)-strlen(response_buffer)-1);
 
     } else {
 
-        strncat(buffer, "Desired file does not exist...", sizeof(buffer)-strlen(buffer)-1);
+        strncat(response_buffer, "Desired file does not exist...", sizeof(response_buffer)-strlen(response_buffer)-1);
 
     }
 

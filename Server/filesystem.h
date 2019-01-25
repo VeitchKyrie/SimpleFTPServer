@@ -5,17 +5,22 @@
 #ifndef SERVER_FILESYSTEM_H
 #define SERVER_FILESYSTEM_H
 
-#include <libnet.h>
+    #ifndef WIN32
+
+        #include <libnet.h>
+
+    #endif
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 
 
 int doesFileExist(char *filepath);
 void getStartFolder(char *folder, int folder_size);
-void listFolder(char *list, char *folder, int folder_size);
 int deleteFile(char *filepath);
-int writeFile(char *filepath, char* data_buffer, int data_size);
+int writeFile(char *filepath, char* data_buffer);
 int writeDir(char *filepath);
 
 #endif //SERVER_FILESYSTEM_H

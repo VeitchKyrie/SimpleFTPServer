@@ -23,8 +23,7 @@ A Simple FTP Client &amp; Server for a School Project
 
 ## Specifications
 - Server is using the **TCP port 1337**
-- **cd** command, unlike unix-style cd , our cd command works with absolute paths. You must specify the entire path of the directory you  want to access.
-- **ls** command is only working on unix fs.
+- The **cd** command, unlike unix-style cd, works with absolute paths. You must specify the entire path of the directory you want to access.
 
 ## Current known bugs
 - When closing the server, you need to wait for up to 5 mins before launching it again. The socket won't work otherwise.

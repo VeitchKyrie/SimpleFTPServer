@@ -26,6 +26,7 @@ typedef struct in_addr IN_ADDR;
 #endif
 
 #include <string.h>
+#include <stdio.h>
 
 #include "client.h"
 #include "command.h"
@@ -35,13 +36,13 @@ SOCKET init(void);
 void finish(void);
 
 SOCKET start(SOCKET sock);
-void stop(SOCKET sock);
+void server_stop(SOCKET sock);
 
-void close_all(Client *clients, int *nbClients);
+void command_decipher(char *buffer, char *command, char *arguments);
+void response_prefix(char *response_buffer, char *current_folder);
+int client_receive(SOCKET sock, char *msg);
+int client_respond(SOCKET sock, const char *msg);
+void client_close_all(Client *clients, int *nbClients);
 void client_close(Client *clients, int i, int *nbClients);
-
-int client_recv(SOCKET sock, char *msg);
-int client_send(SOCKET sock, const char *msg);
-void send_path(SOCKET sock, char *buffer, int buffersize, char *path, int pathsize);
 
 #endif //SERVER_SERVER_H
