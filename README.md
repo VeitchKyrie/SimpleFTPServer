@@ -2,13 +2,15 @@
 A Simple FTP Client &amp; Server for a School Project
 
 ## How to launch 
-1- Lauch server executable
-2- Lauch client exectuable
-3- Enter the IPv4 address you want to access to
-4- Enter the username you want to use
-5- You are now abble to use the server !
+
+1. Lauch server executable
+2. Lauch client exectuable
+3. Enter the IPv4 address you want to access to
+4. Enter the username you want to use
+5. You are now abble to use the server !
 
 ## Command list
+
 | Command             | Description                                                 |
 |---------------------|-------------------------------------------------------------|
 | help                | list all availables commands                                |
@@ -23,7 +25,9 @@ A Simple FTP Client &amp; Server for a School Project
 
 ## Specifications
 - Server is using the **TCP port 1337**
+- This in **not** multiplatform. This has been made to work on Linux and can't work on Windows yet.
 - The **cd** command, unlike unix-style cd, works with absolute paths. You must specify the entire path of the directory you want to access.
 
 ## Current known bugs
 - When closing the server, you need to wait for up to 5 mins before launching it again. The socket won't work otherwise.
+
